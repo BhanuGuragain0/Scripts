@@ -1,2 +1,2 @@
 # Scripts
-Scripts For Autometing Tasks
+Scripts For Autometing Tasks And Solving CTF
