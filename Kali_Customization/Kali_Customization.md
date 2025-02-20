@@ -138,8 +138,10 @@ tldr nmap
 # Replace man command with tlder
 echo "alias man='tldr'" >> ~/.zshrc
 
-## You can make more advance with this paste this to your ~/.zshrc file
+## You can make more advance with this paste this to your ~/.zshrc file install the fzf tool first then paste
 
+sudo apt install fzf
+sudo nano ~/.zshrc
 man() {
     local cmd
     if [[ -z "$1" ]]; then
