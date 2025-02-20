@@ -138,6 +138,26 @@ tldr nmap
 # Replace man command with tlder
 echo "alias man='tldr'" >> ~/.zshrc
 
+## You can make more advance with this paste this to your ~/.zshrc file
+
+man() {
+    local cmd
+    if [[ -z "$1" ]]; then
+        # If no command is provided, use fzf to search tldr commands
+        cmd=$(tldr --list | fzf --preview 'tldr {}' --height 80% --border --reverse)
+        [[ -n "$cmd" ]] && tldr "$cmd"
+    else
+        # Try TLDR first, fallback to man if no page exists
+        if tldr "$1" &>/dev/null; then
+            tldr "$1"
+        else
+            command man "$1"
+        fi
+    fi
+}
+
+
+
 ```
 
 ---
