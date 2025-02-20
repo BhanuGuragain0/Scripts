@@ -134,6 +134,10 @@ sudo apt install tldr -y
 # Example usage:
 tldr find
 tldr nmap
+
+# Replace man command with tlder
+echo "alias man='tldr'" >> ~/.zshrc
+
 ```
 
 ---
