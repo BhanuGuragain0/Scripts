@@ -9,11 +9,11 @@ backup creation, interactive confirmation, logging (to console and file), and st
 a mapping file for reverting changes if needed.
 
 Usage examples:
-    # Basic usage: rename files ending with "_tool.py" to "_wrapper.py" in the current directory.
+    # Basic usage: rename files ending with "_tool.py" to "_warper.py" in the current directory.
     python3 rename_files.py
 
     # Specify a base directory and run interactively with verbose logging.
-    python3 rename_files.py -d /path/to/directory -p "_tool.py" -r "_wrapper.py" --interactive --verbose
+    python3 rename_files.py -d /path/to/directory -p "_tool.py" -r "_warper.py" --interactive --verbose
 
     # Run in dry-run mode with backup and regex mode enabled.
     python3 rename_files.py --dry-run --backup --regex
@@ -46,8 +46,8 @@ def parse_args():
         help='Filename pattern to search for (default: "_tool.py").'
     )
     parser.add_argument(
-        '-r', '--replacement', type=str, default='_wrapper.py',
-        help='Replacement string (default: "_wrapper.py").'
+        '-r', '--replacement', type=str, default='_warper.py',
+        help='Replacement string (default: "_warper.py").'
     )
     parser.add_argument(
         '--regex', action='store_true',
