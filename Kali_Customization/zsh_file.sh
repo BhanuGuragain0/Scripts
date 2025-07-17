@@ -1557,7 +1557,26 @@ zle -N _zsh_refresh_dashboard
 bindkey '^X^R' _zsh_refresh_dashboard
 
 
-
+# === ALIASES ===
+# Enhanced ls with eza/exa
+if command -v eza &> /dev/null; then
+  alias ls='eza --icons --long --group-directories-first --git'
+  alias ll='eza -la --icons --group-directories-first --git'
+  alias la='eza -la --icons --group-directories-first'
+  alias lt='eza --tree --level=2 --icons'
+  alias l='eza -F --icons'
+elif command -v exa &> /dev/null; then
+  alias ls='exa --icons --long --group-directories-first --git'
+  alias ll='exa -la --icons --group-directories-first --git'
+  alias la='exa -la --icons --group-directories-first'
+  alias lt='exa --tree --level=2 --icons'
+  alias l='exa -F --icons'
+else
+  alias ls='ls --color=auto --group-directories-first'
+  alias ll='ls -la'
+  alias la='ls -la'
+  alias l='ls -CF'
+fi
 
 # System management
 alias update="sudo apt update && sudo apt upgrade -y && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt autoclean"
