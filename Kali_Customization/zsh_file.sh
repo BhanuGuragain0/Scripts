@@ -404,11 +404,15 @@ matrix_rain() {
     local width=${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
     local height=${LINES:-$(tput lines 2>/dev/null || echo 24)}
 
-    # Validate terminal capabilities
+    # Validate terminal capabilities and dimensions
     if ! command -v tput &>/dev/null; then
         echo "Terminal not supported for matrix effect"
         return 1
     fi
+
+    # Ensure positive dimensions
+    width=$((width > 0 ? width : 80))
+    height=$((height > 0 ? height : 24))
 
     # Enhanced character set with more authentic Matrix look
     local chars="ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|;:,.<>?"
@@ -426,13 +430,20 @@ matrix_rain() {
     )
     local num_colors=${#colors[@]}
 
-    # Initialize column arrays with proper bounds checking
-    typeset -a columns lengths speeds last_chars
+    # Initialize column arrays with FIXED bounds checking
+    declare -a columns lengths speeds last_chars
+
     for ((i=0; i<width; i++)); do
-        columns[$i]=$((RANDOM % height - height/2))  # Start some columns off-screen
-        lengths[$i]=$((RANDOM % (height / 3) + 8))   # Varied trail lengths
-        speeds[$i]=$((RANDOM % 4 + 1))               # Variable speeds
-        last_chars[$i]=$((RANDOM % num_chars))       # Track last character for smoother animation
+        # FIX: Ensure only positive values for array indices and positions
+        columns[$i]=$((RANDOM % height))  # Keep positive, start at top
+        lengths[$i]=$((RANDOM % (height / 3) + 8))
+        speeds[$i]=$((RANDOM % 4 + 1))
+        last_chars[$i]=$((RANDOM % num_chars))
+
+        # Optional: Start some columns off-screen (negative y-position, but positive array index)
+        if [[ $((RANDOM % 3)) -eq 0 ]]; then
+            columns[$i]=$(( -(RANDOM % 10) ))  # Start off-screen above
+        fi
     done
 
     # Terminal setup
@@ -452,7 +463,7 @@ matrix_rain() {
         fi
 
         for ((i=0; i<width; i++)); do
-            # Only process columns that are active
+            # Only process columns that are active or about to be active
             if [[ $((columns[i] - lengths[i])) -lt height ]]; then
 
                 # Draw trailing characters with proper color gradient
@@ -481,7 +492,7 @@ matrix_rain() {
 
                 # Reset column when it's completely off screen
                 if [[ $((columns[i] - lengths[i])) -ge height ]]; then
-                    columns[$i]=$((RANDOM % 20 - 20))  # Start higher off-screen
+                    columns[$i]=$(( -(RANDOM % 20) ))  # Start off-screen above
                     lengths[$i]=$((RANDOM % (height / 3) + 8))
                     speeds[$i]=$((RANDOM % 4 + 1))
                 fi
@@ -498,6 +509,32 @@ matrix_rain() {
     printf "\033[2J\033[H"    # Clear screen
 }
 
+# Additional debugging function
+debug_matrix_rain() {
+    local width=${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
+    local height=${LINES:-$(tput lines 2>/dev/null || echo 24)}
+
+    echo "Terminal dimensions: ${width}x${height}"
+    echo "COLUMNS: $COLUMNS"
+    echo "LINES: $LINES"
+    echo "tput cols: $(tput cols 2>/dev/null || echo 'failed')"
+    echo "tput lines: $(tput lines 2>/dev/null || echo 'failed')"
+
+    # Test array assignment
+    declare -a test_array
+    for ((i=0; i<5; i++)); do
+        test_array[$i]=$i
+        echo "test_array[$i] = ${test_array[$i]}"
+    done
+}
+
+# Additional utility function for better matrix control
+matrix_screensaver() {
+    local duration=${1:-30}
+    echo -e "\033[38;2;0;255;0m🔋 Matrix screensaver activated for ${duration}s...\033[0m"
+    matrix_rain $duration
+    echo -e "\033[38;2;0;255;0m✅ Matrix screensaver deactivated\033[0m"
+}
 
 # Advanced loading animation with cyber effects
 loading_animation() {
@@ -1009,7 +1046,7 @@ clear() {
 
     # Matrix effect with controlled probability (25% chance)
     if [[ $((RANDOM % 4)) -eq 0 ]]; then
-        matrix_rain 0.8  # Slightly longer for better effect
+        matrix_rain 1  # Slightly longer for better effect
     fi
 
     # Progressive loading animation
@@ -1035,13 +1072,7 @@ clear() {
     fi
 }
 
-# Additional utility function for better matrix control
-matrix_screensaver() {
-    local duration=${1:-30}
-    echo -e "\033[38;2;0;255;0m🔋 Matrix screensaver activated for ${duration}s...\033[0m"
-    matrix_rain $duration
-    echo -e "\033[38;2;0;255;0m✅ Matrix screensaver deactivated\033[0m"
-}
+
 
 # New live dashboard function
 live_dashboard() {
@@ -1549,23 +1580,13 @@ else
   # Minimal configuration
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(context dir vcs)
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status command_execution_time time)
-  typeset -g POWERLEVEL9K_CONTEXT_DEFAULT_FOREGROUND=196
+  typeset -g POWERLEVEL9K_CONTEXT_FOREGROUND=33
+  typeset -g POWERLEVEL9K_CONTEXT_BACKGROUND=236
   typeset -g POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND=196
   typeset -g POWERLEVEL9K_DIR_FOREGROUND=39
   typeset -g POWERLEVEL9K_VCS_FOREGROUND=76
   typeset -g POWERLEVEL9K_TIME_FOREGROUND=142
 fi
-
-# === CUSTOM POWERLEVEL10K OVERRIDES ===
-# Place any custom P10k settings here to override the defaults.
-
-# Ensure the 'context' (user@host) element is on the left.
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(context dir vcs)
-
-# Custom styling for the 'context' element (bhanu@Shadow).
-# Blue foreground on a dark gray background.
-typeset -g POWERLEVEL9K_CONTEXT_FOREGROUND=33
-typeset -g POWERLEVEL9K_CONTEXT_BACKGROUND=236
 
 # === DIRECTORY SETUP ===
 [[ -d "$XDG_STATE_HOME/zsh" ]] || mkdir -p "$XDG_STATE_HOME/zsh"
