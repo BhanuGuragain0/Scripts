@@ -266,9 +266,6 @@ _zsh_lazy_load_plugins() {
 
   # Must be loaded last
   zinit ice lucid wait'0'; zinit light zsh-users/zsh-syntax-highlighting
-
-  # Re-initialize completion system after loading plugins
-  compinit -C -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${ZSH_VERSION}"
 }
 
 # Hook the lazy load function to run before the first prompt
@@ -2091,12 +2088,21 @@ ulimit -c 0
 umask 022
 
 # === PATH CONFIGURATION ===
-export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 export WORKON_HOME="$HOME/.virtualenvs"
 export GOPATH="$HOME/go"
-export PATH="$GOPATH/bin:$PATH"
-export PATH="$HOME/.cargo/bin:$PATH"
-export PATH="$HOME/.local/share/npm/bin:$PATH"
+export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
+
+path=(
+  "$HOME/.local/bin"
+  "$HOME/bin"
+  "$GOPATH/bin"
+  "$HOME/.cargo/bin"
+  "$HOME/.local/share/npm/bin"
+  "$PNPM_HOME"
+  $path
+)
+typeset -U path
+export PATH
 
 # === CHMOD FIX (use system chmod for symbolic modes) ===
 alias chmod='command chmod'
@@ -2104,10 +2110,3 @@ alias chmod='command chmod'
 # Load local configuration
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
-# pnpm
-export PNPM_HOME="/home/bhanu/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
